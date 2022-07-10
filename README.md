@@ -504,7 +504,7 @@ public:
 ### **std::thread**
 * 创建线程比较简单，C++提供头文件thread，使用std的thread实例化一个线程对象创建。
 * std::thread 在 #include 头文件中声明，因此使用 std::thread 时需要包含 #include 头文件。
-* 线程的同步：在结束线程时需要调用joinable的函数，看能否join到当前线程中，而后使用join接口，join的作用是让主线程等待直到该子线程执行结束。使用join后的线程，此时再次调用joinable函数返回值是false
+* 线程的同步：在结束线程时需要调用joinable的函数，看能否join到当前线程中，而后使用join接口，join的作用是让主线程等待直到该子线程执行结束。使用join后的线程，此时再次调用joinable函数返回值是false。
 
 ## **设计模式**
 ### **单例模式**
@@ -588,6 +588,200 @@ public:
 * **继承**：继承是一种层次模型,它连接类,允许并鼓励类的重用,提供了一种明确表达共性的方法。
 * **多态**：多态允许不同类的对象响应相同的消息。例如,同样的加法,两次相加和两个整数相加,一定是完全不同的。
 ### **虚函数**
+* **概念**：虚函数，是指被virtual关键字修饰的成员函数。
+* **作用**：函数作为多态的实现方式,重要性毋庸置疑。多态意指相同的消息给予不同的对象会引发不同的动作(一个接口,多种方法)
+* **虚函数的内存模型**：**虚函数**（**Virtual Function**）是通过虚函数表（**Virtual Table**，简称为**V-Table**）来实现的。虚函数表主要存储的是**指向一个类的虚函数地址的指针**，通过使用虚函数表，继承、覆盖的问题都都得到了解决。
+  * **单继承无虚函数覆盖的情况**：
+  ```C++
+  #include <iostream>
+  #include <string>
+  class Base{
+    public:
+      virtual void f(){
+          std::cout << "Base::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base::h()" << std::endl;
+      }
+  };
+  
+  class Derived : public Base{
+  public:
+      virtual void f1(){
+          std::cout << "Derived::f1()" << std::endl;
+      }
+      virtual void g1(){
+          std::cout << "Derived::g1()" << std::endl;
+      }
+
+      virtual void h1(){
+          std::cout << "Derived::h1()" << std::endl;
+      }
+  };
+  ```
+  **虚函数表**：
+  ![图片](image/28.png)
+  * **单继承有虚函数覆盖的情况**
+  ```C++
+  #include <iostream>
+  #include <string>
+  class Base{
+    public:
+      virtual void f(){
+          std::cout << "Base::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base::h()" << std::endl;
+      }
+  };
+  
+  class Derived : public Base{
+  public:
+      virtual void f1(){
+          std::cout << "Derived::f1()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Derived::g1()" << std::endl;
+      }
+
+      virtual void h1(){
+          std::cout << "Derived::h1()" << std::endl;
+      }
+  };
+  ```
+  **虚函数表**：
+  ![图片](image/29.png)
+  * **多重继承的情况**
+  ```C++
+  #include <iostream>
+  #include <string>
+  class Base1
+  {
+  public:
+      virtual void f(){
+          std::cout << "Base1::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base1::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base1::h()" << std::endl;
+      }
+  };
+
+  class Base2
+  {
+  public:
+      virtual void f(){
+          std::cout << "Base2::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base2::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base2::h()" << std::endl;
+      }
+  };
+
+  class Base3
+  {
+  public:
+      virtual void f(){
+          std::cout << "Base3::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base3::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base3::h()" << std::endl;
+      }
+  };
+
+  class Derived : public Base1, public Base2, public Base3
+  {
+  public:
+      virtual void f(){
+          std::cout << "Derived::f()" << std::endl;
+      }
+      virtual void g1(){
+          std::cout << "Derived::g1()" << std::endl;
+      }
+      virtual void h1(){
+          std::cout << "Derived::h1()" << std::endl;
+      }
+  };
+
+  ```
+  **虚函数表**
+
+  ![图片](image/30.png)
+  **继承关系**
+  
+  ![图片](image/31.png)
+  * **多层继承的情况**
+  ```C++
+  #include <iostream>
+  #include <string>
+  class Base
+  {
+  public:
+      virtual void f(){
+          std::cout << "Base::f()" << std::endl;
+      }
+      virtual void g(){
+          std::cout << "Base::g()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "Base::h()" << std::endl;
+      }
+  };
+
+  class Derived : public Base
+  {
+  public:
+      virtual void f(){
+          std::cout << "Derived::f()" << std::endl;
+      }
+      virtual void g1(){
+          std::cout << "Derived::g1()" << std::endl;
+      }
+  };
+
+  class DDerived : public Derived
+  {
+  public:
+      virtual void f(){
+          std::cout << "DDerived::f()" << std::endl;
+      }
+      virtual void h(){
+          std::cout << "DDerived::h()" << std::endl;
+      }
+      virtual void g2(){
+          std::cout << "DDerived::g2()" << std::endl;
+      }
+  };
+
+  int main(int argc, char* argv[])
+  {
+      DDerived dd;
+      dd.f();
+  }
+
+  ```
+  * **继承关系**：
+  
+    ![图片](image/32.png)
+  * **虚函数表**：
+    
+    ![图片](image/33.png)
+  
+  
 ## **参考资料**
 * [字节跳动 提前批C++开发一面面经 →【鹿の面经解答】](https://www.nowcoder.com/discuss/981246)
 * [Linux下内存问题检测神器：Valgrind](https://zhuanlan.zhihu.com/p/75328270)
@@ -603,3 +797,5 @@ public:
 * [push_back 和 emplace_back 的差异，清晰易懂！](https://blog.csdn.net/pengjian444/article/details/116740246)
 * [std::condition_variable详解](https://www.cnblogs.com/yanghh/p/12995084.html)
 * [C++11中std::future的使用](https://blog.csdn.net/fengbingchun/article/details/104115489)
+* [一文读懂C++虚函数的内存模型](https://blog.csdn.net/weixin_43798887/article/details/118196343)
+* [一文读懂C++虚继承的内存模型](https://blog.csdn.net/weixin_43798887/article/details/118369498)
