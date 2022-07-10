@@ -477,7 +477,9 @@ public:
 * **std::shared_mutex**
   * 共享 (读)- 多个线程能共享同一互斥的所有权。
   * 独占性（写）- 仅一个线程能占有互斥。
+  
 ![图片](image/27.png)
+
 ### **锁**
 * **std::unique_lock**
   * std::unique_lock是互斥锁，他是对std::mutex或者std::shared_mutex加上互斥锁，可以独占该互斥变量。
