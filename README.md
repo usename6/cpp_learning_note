@@ -781,7 +781,94 @@ public:
     
     ![图片](image/33.png)
   
-  
+### **虚继承模型**
+**菱形继承问题**：**C++的多继承是指从多个直接基类中产生派生类的能力**，多继承的派生类继承了所有父类的成员。从概念上来讲这是非常简单的，但是多个基类的相互交织可能会带来错综复杂的设计问题，命名冲突就是不可回避的一个，比如典型的是菱形继承，如图所示：
+
+![图片](image/34.png)
+
+**代码**：
+```C++
+#include <iostream>
+#include <stdint.h>
+class A{
+public:
+    long a;
+};
+
+class B: public {
+public:
+    long b;
+};
+
+
+class C: public A{
+public:
+    long c;
+};
+
+class D: public B, public C{
+public:
+    void seta(long v) { a = v; } // 命名冲突
+    void setb(long v) { b = v; } // 正确
+    void setc(long v) { c = v; } // 正确
+    void setd(long v) { d = v; } // 正确
+
+private:
+    long d;
+};
+
+int main(int argc, char* argv[])
+{
+    D d;
+}
+
+```
+变量(类型为D)d的内存布局，如下图所示:
+![图片](image/35.png)
+* **为了解决多继承时命名冲突和冗余数据的问题**，C++提出了**虚继承**这个概念，虚继承可以使得在派生类中**只保留一份间接基类的成员**。使用方式就是在继承方式前面加上virtual关键字修饰，示例代码如下（基于前面的例子修改）：
+```C++
+#include <iostream>
+#include <stdint.h>
+class A{
+public:
+    long a;
+};
+
+class B: virtual public A{
+public:
+    long b;
+};
+
+
+class C: virtual public A{
+public:
+    long c;
+};
+
+class D: public B, public C{
+public:
+    void seta(long v) { a = v; } // 现在不会冲突了
+    void setb(long v) { b = v; } // 正确
+    void setc(long v) { c = v; } // 正确
+    void setd(long v) { d = v; } // 正确
+
+private:
+    long d;
+};
+
+int main(int argc, char* argv[]){
+    D d;
+}
+
+```
+**继承图**：
+
+![图片](image/36.png)
+
+**类D的内存布局**：
+
+![图片](image/37.png)
+
 ## **参考资料**
 * [字节跳动 提前批C++开发一面面经 →【鹿の面经解答】](https://www.nowcoder.com/discuss/981246)
 * [Linux下内存问题检测神器：Valgrind](https://zhuanlan.zhihu.com/p/75328270)
