@@ -469,7 +469,51 @@ public:
     }
 };
 ```
-## 参考资料
+## **并发编程**
+### **信号量**
+* **std::mutex**
+  * A mutex is a lockable（**可加锁的**） object that is designed to signal（**信号**） when critical sections of code（**临界代码段**） need exclusive access, preventing other threads with the same protection from executing concurrently and access the same memory locations.
+  * 常见操作：**std::mutex m_lock**、**m_lock.lock()**、**m_lock.unlock()**。
+* **std::shared_mutex**
+  * 共享 (读)- 多个线程能共享同一互斥的所有权。
+  * 独占性（写）- 仅一个线程能占有互斥。
+![图片](image/27.png)
+### **锁**
+* **std::unique_lock**
+  * std::unique_lock是互斥锁，他是对std::mutex或者std::shared_mutex加上互斥锁，可以独占该互斥变量。
+* **std::shared_lock**
+  * std::shared_lock是读锁，他是对std::shared_mutex加上读锁，其他读线程或者写进程仍然可以访问该std::shared_mutex。
+* **与信号量的不同**
+  * 信号量加锁和释放都需要自己来。
+  * 而锁则是构造时候加锁，析构就解锁。
+### **std::condition_variable**
+* **概念**：多线程访问一个共享资源（或称临界区），不仅需要用互斥锁实现独享访问避免并发错误，在获得互斥锁进入临界区后，有时还需检查特定条件是否成立。**如果不成立，则解锁该mutex，进入等待队列等待唤醒**。当某个线程修改测试条件后，将通知其它正在等待条件的线程继续往下执行，**并对该mutex再次加锁**。
+* **作用**：条件变量需要和一个互斥锁绑定，这个互斥锁的作用为：
+  * a. 互斥地访问临界资源。 
+  * b. 保护测试条件。
+### **std::future**
+* **概念**：C++11中的std::future是一个模板类。std::future提供了一种用于访问异步操作结果的机制。
+* **重点函数(get)**：
+  * (1).当共享状态就绪时，返回存储在共享状态中的值(或抛出异常)。
+  * (2).如果共享状态尚未就绪(即提供者尚未设置其值或异常)，则该函数将阻塞调用的线程直到就绪。
+  * (3).当共享状态就绪后，则该函数将取消阻塞并返回(或抛出)释放其共享状态，这使得future对象不再有效，因此对于每一个future共享状态，该函数最多应被调用一次。
+  * (4).std::future<void>::get()不返回任何值，但仍等待共享状态就绪并释放它。
+  * (5).共享状态是作为原子操作(atomic operation)被访问。
+### **std::thread**
+* 创建线程比较简单，C++提供头文件thread，使用std的thread实例化一个线程对象创建。
+* std::thread 在 #include 头文件中声明，因此使用 std::thread 时需要包含 #include 头文件。
+* 线程的同步：在结束线程时需要调用joinable的函数，看能否join到当前线程中，而后使用join接口，join的作用是让主线程等待直到该子线程执行结束。使用join后的线程，此时再次调用joinable函数返回值是false
+
+## **设计模式**
+### **单例模式**
+* **按创建时刻划分**：
+  * **懒汉式**
+  * **饥汉式**
+* **按是否有锁划分**：
+  * **加锁式**
+  * **无锁式**
+
+## **参考资料**
 * [字节跳动 提前批C++开发一面面经 →【鹿の面经解答】](https://www.nowcoder.com/discuss/981246)
 * [Linux下内存问题检测神器：Valgrind](https://zhuanlan.zhihu.com/p/75328270)
 * [memcpy函数的实现](https://blog.csdn.net/lswfcsdn/article/details/122066079)
@@ -482,3 +526,5 @@ public:
 * [C++ std::unordered_map](https://blog.csdn.net/u013271656/article/details/113810084)
 * [push_back和emplace_back区别](https://blog.csdn.net/bureau123/article/details/123417471)
 * [push_back 和 emplace_back 的差异，清晰易懂！](https://blog.csdn.net/pengjian444/article/details/116740246)
+* [std::condition_variable详解](https://www.cnblogs.com/yanghh/p/12995084.html)
+* [C++11中std::future的使用](https://blog.csdn.net/fengbingchun/article/details/104115489)
