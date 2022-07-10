@@ -509,12 +509,85 @@ public:
 ## **设计模式**
 ### **单例模式**
 * **按创建时刻划分**：
-  * **懒汉式**
-  * **饥汉式**
+  * **懒汉式**：有需要我才创建，可以避免初始化的时候，加载太多东西，占用资源。
+  * **饥汉式**：不管是否需要，我都会在创建的时候加载。
 * **按是否有锁划分**：
-  * **加锁式**
-  * **无锁式**
+  * **加锁式**：加载的时候加锁检查是否有进程new了，如果有进程正在new则被阻塞等待。
+  ```C++
+  template <typename T>
+  class Singleton{
+  public:
+      inline static T* getInstance(){
+          if(instance.get() == NULL){
+              m_mutex.lock();
+              std::unique_ptr<T> cur(new T());
+              instance = std::move(cur);
+              m_mutex.unlock();
+          }
+          return instance.get();
+      }
+      Singleton(void){}
+      Singleton(const Singleton&) = delete;
+      Singleton(const Singleton&&) = delete;
+      Singleton & operator=(const Singleton&) = delete;
+  private:
+      static std::unique_ptr<T> instance;
+      static std::mutex m_mutex;
+  };
+  template <typename T> 
+  std::unique_ptr<T> Singleton<T>::instance;
+  template <typename T>
+  std::mutex Singleton<T>::m_mutex;
+  #define DECLARE_SINGLETON_CLASS( type ) \
+  private:\
+      friend class std::unique_ptr< type >; \
+      friend class Singleton< type >;
+  ```
+  * **无锁式**：不加锁检查，使用CAS的机制来实现。
+    * compare_exchange_strong：atomic库中的一个函数，入参是3个，**expect，desire，memoryorder**，意思是**如果当前的变量this的值==expect值**，则将this值改为desire，并返回true，否则，返回false，**不进行修改，即进行一个读的操作**。 **bool compare_exchange_strong(T * &expected,T * desired,
+    memory_order order=memory_order_seq_cst) volatile**
+  ```C++
+  #include <atomic>
+  template<class _Ty>
+  class CSingleton
+  {
+  public:
+      static _Ty* GetInstance();
+  protected:
+      CSingleton() {}
+      CSingleton(const CSingleton& that){}
+      CSingleton& operator=(const CSingleton& that) { return *this; }
+      ~CSingleton() {}
+  };
 
+  template<class _Ty>
+  _Ty* CSingleton<_Ty>::GetInstance()
+  {
+      static std::atomic<_Ty*> _atmInstance;
+      _Ty* pCurNode = _atmInstance.load();
+      if (pCurNode == NULL)
+      {
+          _Ty* pNewNode = new _Ty;
+          _atmInstance.compare_exchange_strong(pCurNode, pNewNode);
+          if (pCurNode != NULL)
+          {
+              //说明其他线程已经更新了
+              delete pNewNode;
+          }
+          else
+          {
+              pCurNode = pNewNode;
+          }
+      }
+      return pCurNode;
+  }
+  ```
+## **面向对象编程**
+### **三大特性**
+* **封装**：封装是将过程和数据包围起来,数据只能通过定义的接口访问。
+* **继承**：继承是一种层次模型,它连接类,允许并鼓励类的重用,提供了一种明确表达共性的方法。
+* **多态**：多态允许不同类的对象响应相同的消息。例如,同样的加法,两次相加和两个整数相加,一定是完全不同的。
+### **虚函数**
 ## **参考资料**
 * [字节跳动 提前批C++开发一面面经 →【鹿の面经解答】](https://www.nowcoder.com/discuss/981246)
 * [Linux下内存问题检测神器：Valgrind](https://zhuanlan.zhihu.com/p/75328270)
